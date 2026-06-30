@@ -1,0 +1,45 @@
+//
+//  NewsSectionView.swift
+//  QuestionBankApp
+//
+//  最新动态区块。
+//
+
+import SwiftUI
+
+/// 「最新动态」区块：双语标题行 + 横向滚动卡片列表
+struct NewsSectionView: View {
+    let news: [NewsItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("LATEST NEWS")
+                        .font(.monoEnglish(.caption2, weight: .bold))
+                        .foregroundColor(.brandCinnabar)
+
+                    Text("最新动态")
+                        .font(.serifChinese(.headline, weight: .semibold))
+                        .foregroundColor(.darkBrown)
+                }
+
+                Spacer()
+
+                Button("查看全部") {
+                    // TODO: 跳转到全部动态列表页
+                }
+                .font(.serifChinese(.subheadline))
+                .foregroundColor(.brandCinnabar)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(news) { item in
+                        NewsCardView(item: item)
+                    }
+                }
+            }
+        }
+    }
+}

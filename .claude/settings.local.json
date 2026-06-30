@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm remove *)",
+      "Bash(pnpm db:seed *)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s http://localhost:3000/papers)",
+      "Bash(curl -s \"http://localhost:3000/papers?year=2024&region=新高考I卷\")",
+      "Bash(curl -s http://localhost:3000/news)",
+      "Bash(curl *)",
+      "Bash(xcodebuild -project QuestionBankApp/QuestionBankApp.xcodeproj -scheme QuestionBankApp -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build)",
+      "Bash(xcodebuild -project /Users/xxx/Code/QuestionBank/QuestionBankApp/QuestionBankApp.xcodeproj -scheme QuestionBankApp -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build)",
+      "Bash(python3 *)",
+      "Bash(xcodebuild *)",
+      "Bash(xcrun simctl *)",
+      "Bash(file /tmp/font-download/*)",
+      "Bash(unzip -q source-han-serif-cn.zip)",
+      "Bash(npm pack *)",
+      "Bash(tar -tzf chinese-fonts-syst*.tgz)",
+      "Bash(grep -E \"\\\\.\\(ttf|otf|woff2\\)$\")"
+    ]
+  }
+}
