@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// 「试题列表」区块：双语标题行 + 试卷行列表
+/// 「试题列表」区块：双语标题行 + 试卷卡片列表
 /// 试卷总数根据传入的 papers 数组动态显示
 struct PaperListSectionView: View {
     let papers: [Paper]
@@ -33,21 +33,21 @@ struct PaperListSectionView: View {
                     .foregroundColor(.mutedBrown)
             }
 
-            LazyVStack(spacing: 0) {
+            LazyVStack(spacing: 12) {
                 ForEach(papers) { paper in
-                    NavigationLink(destination: PaperDetailView(paperName: paper.fileName)) {
-                        PaperRowView(paper: paper)
-                    }
-                    // 使用 PlainButtonStyle 避免 NavigationLink 默认的蓝色高亮/背景
-                    .buttonStyle(PlainButtonStyle())
+                    ZStack(alignment: .topTrailing) {
+                        NavigationLink(destination: PaperDetailView(paper: paper)) {
+                            PaperRowView(paper: paper)
+                        }
+                        // 使用 PlainButtonStyle 避免 NavigationLink 默认的蓝色高亮/背景
+                        .buttonStyle(PlainButtonStyle())
 
-                    Divider()
-                        .background(AppTheme.divider)
-                        .padding(.leading, 56)
+                        FavoriteStarButton(paper: paper)
+                            .padding(.top, 8)
+                            .padding(.trailing, 8)
+                    }
                 }
             }
-            .background(AppTheme.cardBackground)
-            .cornerRadius(12)
         }
     }
 }

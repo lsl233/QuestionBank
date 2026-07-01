@@ -32,7 +32,19 @@ struct PDFViewer: UIViewRepresentable {
         // 用本地 PDF 文件创建 PDFDocument
         if let document = PDFDocument(url: url) {
             pdfView.document = document
+            // PDFKit 默认会在页面边缘绘制阴影，递归清除所有子视图的阴影层
+            removeShadows(from: pdfView)
         }
+    }
+
+    // MARK: - 阴影移除
+
+    /// 递归遍历视图层级，关闭 CALayer 的阴影效果
+    private func removeShadows(from view: UIView) {
+        view.layer.shadowOpacity = 0
+        view.layer.shadowRadius = 0
+        view.layer.shadowOffset = .zero
+        view.subviews.forEach { removeShadows(from: $0) }
     }
 
     static func dismantleUIView(_ pdfView: PDFView, coordinator: ()) {

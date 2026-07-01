@@ -6,10 +6,6 @@ import { pool, query } from './index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const samplePapers = [
-  { year: '2026', region: '上海', subject: '数学', fileName: '2026上海' },
-]
-
 const sampleNews = [
   {
     tag: '最新',
@@ -31,17 +27,28 @@ const sampleNews = [
   },
 ]
 
+// 会员产品配置，product_id 需与 App Store Connect 中配置的一致
+const membershipProducts = [
+  { appleProductId: 'name.lsl.QuestionBankApp.membership.month', name: '月度会员', durationDays: 30, isPermanent: false },
+  { appleProductId: 'name.lsl.QuestionBankApp.membership.quarter', name: '季度会员', durationDays: 90, isPermanent: false },
+  { appleProductId: 'name.lsl.QuestionBankApp.membership.year', name: '年度会员', durationDays: 365, isPermanent: false },
+  { appleProductId: 'name.lsl.QuestionBankApp.membership.permanent', name: '永久会员', durationDays: null, isPermanent: true },
+]
+
 async function run() {
   const schemaPath = path.join(__dirname, 'schema.sql')
   const schema = await fs.readFile(schemaPath, 'utf-8')
   await query(schema)
 
-  for (const paper of samplePapers) {
+  for (const product of membershipProducts) {
     await query(
-      `INSERT INTO papers (year, region, subject, file_name)
+      `INSERT INTO membership_products (apple_product_id, name, duration_days, is_permanent)
        VALUES ($1, $2, $3, $4)
-       ON CONFLICT (file_name) DO NOTHING`,
-      [paper.year, paper.region, paper.subject, paper.fileName]
+       ON CONFLICT (apple_product_id) DO UPDATE SET
+         name = EXCLUDED.name,
+         duration_days = EXCLUDED.duration_days,
+         is_permanent = EXCLUDED.is_permanent`,
+      [product.appleProductId, product.name, product.durationDays, product.isPermanent]
     )
   }
 
@@ -58,7 +65,11 @@ async function run() {
   await pool.end()
 }
 
-run().catch((err) => {
-  console.error(err)
+run().catch((err: unknown) => {
+  if (err instanceof Error) {
+    console.error(err.message)
+  } else {
+    console.error(err)
+  }
   process.exit(1)
 })

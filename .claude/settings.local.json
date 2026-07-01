@@ -18,7 +18,12 @@
       "Bash(unzip -q source-han-serif-cn.zip)",
       "Bash(npm pack *)",
       "Bash(tar -tzf chinese-fonts-syst*.tgz)",
-      "Bash(grep -E \"\\\\.\\(ttf|otf|woff2\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ttf|otf|woff2\\)$\")",
+      "Bash(awk -F'/' '{print $6}')",
+      "Bash(awk -F'/' '{print $\\(NF-1\\)}')",
+      "Bash(awk '{print $1}')",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

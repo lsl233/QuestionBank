@@ -13,22 +13,24 @@ import SwiftUI
 enum CustomFont: String {
     /// Space Mono Regular
     case spaceMonoRegular = "SpaceMono-Regular"
+    /// 思源宋体 Regular（简体中文）
+    case sourceHanSerifCNRegular = "SourceHanSerifCN-Regular"
 }
 
 extension Font {
     // MARK: - 中文宋体
 
     /// 中文宋体字体（按 TextStyle）。
-    /// 真机加载 11MB 的 Source Han Serif 会导致内存压力被系统终止，
-    /// 因此改用系统自带的 serif 设计，视觉上仍为宋体风格且零额外内存开销。
+    /// 当前使用 Source Han Serif CN Regular；加粗由 SwiftUI 合成，直到补齐 Bold 字重。
     static func serifChinese(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
-        Font.system(style, design: .serif)
+        Font.custom(CustomFont.sourceHanSerifCNRegular.rawValue, size: sizeFor(style), relativeTo: style)
             .weight(weight)
     }
 
     /// 中文宋体字体（按固定字号）。
     static func serifChinese(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        Font.system(size: size, weight: weight, design: .serif)
+        Font.custom(CustomFont.sourceHanSerifCNRegular.rawValue, fixedSize: size)
+            .weight(weight)
     }
 
     // MARK: - 英文等宽

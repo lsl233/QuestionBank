@@ -5,12 +5,15 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "import:gaokaomath": "tsx src/scripts/importGaokaomath.ts"
   },
   "dependencies": {
+    "@apple/app-store-server-library": "^3.1.0",
     "@hono/node-server": "^2.0.6",
     "dotenv": "16.4.5",
     "hono": "^4.12.27",
+    "jose": "^5.9.6",
     "pg": "^8.22.0",
     "zod": "^4.4.3"
   },

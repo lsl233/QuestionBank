@@ -10,7 +10,10 @@ import SwiftUI
 /// 试卷详情页：顶部显示试卷名称，下方嵌入 PDF 阅读器
 /// 进入页面后自动把 PDF 下载到本地 Documents，再展示和分享本地文件
 struct PaperDetailView: View {
-    let paperName: String
+    let paper: Paper
+
+    @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var userDataStore: UserDataStore
 
     /// 控制分享面板的显示状态
     @State private var showShareSheet = false
@@ -18,8 +21,9 @@ struct PaperDetailView: View {
     /// 控制勘误反馈弹窗的显示状态
     @State private var showCorrectionSheet = false
 
-    /// 当前试卷是否已收藏
-    @State private var isFavorite = false
+    /// 控制下载限制提示弹窗
+    @State private var showDownloadRestrictionAlert = false
+    @State private var downloadRestrictionMessage = ""
 
     /// 是否正在下载 PDF
     @State private var isDownloading = true
@@ -61,7 +65,7 @@ struct PaperDetailView: View {
                             .foregroundColor(AppTheme.textSecondary)
                             .multilineTextAlignment(.center)
                         Button("重新加载") {
-                            Task { await downloadPDF() }
+                            Task { await previewPDF() }
                         }
                         .font(.serifChinese(.subheadline, weight: .semibold))
                         .padding(.horizontal, 24)
@@ -72,6 +76,7 @@ struct PaperDetailView: View {
                     }
                     .padding(.horizontal, 32)
                     .background(AppTheme.background)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let localPDFURL {
                     // 下载成功：PDF + 底部功能栏
                     pdfContentView(url: localPDFURL)
@@ -81,7 +86,7 @@ struct PaperDetailView: View {
                         .foregroundColor(AppTheme.error)
                 }
             }
-            .navigationTitle(paperName)
+            .navigationTitle(paper.displayTitle)
             .sheet(isPresented: $showShareSheet) {
                 if let localPDFURL {
                     // 分享本地文件，用户可选择「存储到文件」完成下载
@@ -89,11 +94,29 @@ struct PaperDetailView: View {
                 }
             }
             .sheet(isPresented: $showCorrectionSheet) {
-                CorrectionSheet(paperName: paperName)
+                CorrectionSheet(paper: paper) {
+                    Task {
+                        await userDataStore.loadProfileCounts()
+                    }
+                }
             }
-            // 页面出现时自动下载 PDF
+            .alert("下载受限", isPresented: $showDownloadRestrictionAlert) {
+                Button("确定", role: .cancel) {}
+            } message: {
+                Text(downloadRestrictionMessage)
+            }
+            // 页面出现时自动预览 PDF 并记录学习
             .task {
-                await downloadPDF()
+                await previewPDF()
+            }
+            .onAppear {
+                // 查看 3 秒后记录学习记录
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    Task {
+                        try? await APIService.shared.recordStudy(paperId: paper.id, durationSec: 3)
+                        await userDataStore.loadProfileCounts()
+                    }
+                }
             }
         }
         .background(AppTheme.background.ignoresSafeArea())
@@ -101,29 +124,37 @@ struct PaperDetailView: View {
 
     // MARK: - PDF 内容与底部按钮栏
 
-    /// PDF 阅读区 + 底部功能按钮栏
+    /// PDF 阅读区 + 底部浮动功能按钮组
     private func pdfContentView(url: URL) -> some View {
-        VStack(spacing: 0) {
+        ZStack {
             PDFViewer(url: url)
                 .edgesIgnoringSafeArea(.bottom)
 
-            bottomToolbar
+            VStack {
+                Spacer()
+                bottomToolbar
+                    .padding(.bottom, 24)
+            }
         }
     }
 
-    /// 底部功能按钮栏：收藏、下载、勘误
+    /// 底部浮动胶囊按钮组：收藏、下载、勘误
     private var bottomToolbar: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             toolbarButton(
                 title: "收藏",
-                icon: isFavorite ? "star.fill" : "star",
-                action: { isFavorite.toggle() }
+                icon: userDataStore.isFavorite(paperId: paper.id) ? "star.fill" : "star",
+                action: {
+                    Task {
+                        await userDataStore.toggleFavorite(paper: paper)
+                    }
+                }
             )
 
             toolbarButton(
                 title: "下载",
                 icon: "arrow.down.circle",
-                action: { showShareSheet = true }
+                action: { handleDownload() }
             )
 
             toolbarButton(
@@ -133,9 +164,12 @@ struct PaperDetailView: View {
             )
         }
         .padding(.vertical, 10)
-        .background(AppTheme.cardBackground)
-        // 顶部一条细腻分隔线
-        .overlay(Divider().background(AppTheme.divider), alignment: .top)
+        .padding(.horizontal, 12)
+        .background(
+            Capsule()
+                .fill(AppTheme.cardBackground)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 6)
     }
 
     /// 单个底部按钮
@@ -143,26 +177,27 @@ struct PaperDetailView: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 22, weight: .medium))
+                    .font(.system(size: 20, weight: .medium))
                 Text(title)
                     .font(.serifChinese(.caption2))
             }
             .foregroundColor(AppTheme.textSecondary)
-            .frame(maxWidth: .infinity)
+            .frame(minWidth: 56)
+            .padding(.vertical, 4)
         }
     }
 
     // MARK: - 数据加载
 
-    /// 调用 APIService 把 PDF 下载到本地 Documents
-    private func downloadPDF() async {
+    /// 免费预览 PDF：下载到本地 Documents 用于展示
+    private func previewPDF() async {
         isDownloading = true
         errorMessage = nil
         localPDFURL = nil
         downloadProgress = 0
 
         do {
-            localPDFURL = try await APIService.shared.downloadPDF(fileName: paperName) { progress in
+            localPDFURL = try await APIService.shared.previewPDF(fileName: paper.fileName) { progress in
                 Task { @MainActor in
                     downloadProgress = progress
                 }
@@ -175,13 +210,52 @@ struct PaperDetailView: View {
 
         isDownloading = false
     }
+
+    /// 处理「下载」按钮：未登录提示登录，未开通会员提示开通会员，会员则弹出分享并记录下载
+    private func handleDownload() {
+        guard authManager.isLoggedIn else {
+            downloadRestrictionMessage = "请先登录后再下载试卷"
+            showDownloadRestrictionAlert = true
+            return
+        }
+
+        Task {
+            do {
+                let status = try await APIService.shared.checkMembershipStatus()
+                if status.isMember {
+                    // 记录下载历史并弹出分享
+                    try? await APIService.shared.recordDownload(paperId: paper.id)
+                    await userDataStore.loadProfileCounts()
+                    await MainActor.run {
+                        showShareSheet = true
+                    }
+                } else {
+                    await MainActor.run {
+                        downloadRestrictionMessage = "开通会员后即可下载试卷"
+                        showDownloadRestrictionAlert = true
+                    }
+                }
+            } catch APIError.unauthorized {
+                await MainActor.run {
+                    downloadRestrictionMessage = "登录已过期，请重新登录"
+                    showDownloadRestrictionAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    downloadRestrictionMessage = error.localizedDescription
+                    showDownloadRestrictionAlert = true
+                }
+            }
+        }
+    }
 }
 
 // MARK: - 勘误反馈弹窗
 
-/// 试卷勘误反馈弹窗（占位实现）
+/// 试卷勘误反馈弹窗
 struct CorrectionSheet: View {
-    let paperName: String
+    let paper: Paper
+    let onSubmitted: () -> Void
 
     /// 用户输入的勘误内容
     @State private var content = ""
@@ -192,7 +266,7 @@ struct CorrectionSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                Text("\(paperName) 勘误反馈")
+                Text("\(paper.displayTitle) 勘误反馈")
                     .font(.serifChinese(.headline, weight: .semibold))
                     .foregroundColor(AppTheme.textPrimary)
 
@@ -204,8 +278,11 @@ struct CorrectionSheet: View {
                     .cornerRadius(12)
 
                 Button("提交反馈") {
-                    // TODO: 调用后端接口提交勘误内容
-                    dismiss()
+                    Task {
+                        try? await APIService.shared.submitCorrection(paperId: paper.id, content: content)
+                        onSubmitted()
+                        dismiss()
+                    }
                 }
                 .font(.serifChinese(.subheadline, weight: .semibold))
                 .padding(.horizontal, 24)

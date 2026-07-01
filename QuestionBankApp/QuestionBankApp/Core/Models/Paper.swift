@@ -11,22 +11,18 @@ import Foundation
 struct Paper: Identifiable, Codable, Hashable {
     let id: String       // UUID 字符串，后端返回
     let year: String     // 年份，如"2024"
+    let examType: String // 考试类型，如"普通高考"
     let region: String   // 地区/卷别，如"新高考I卷"
     let subject: String  // 科目，如"语文"
+    let stream: String?  // 文/理分科，旧课程试卷使用
+    let note: String?    // 额外备注
     let fileName: String // 对应后端 /files/:name 的文件名（不含扩展名）
+    let title: String    // 后端展示标题，如"2024年全国甲卷·语文"
+    let viewCount: Int   // 查看次数
 
-    /// 列表中显示的完整标题，格式：年份·地区·科目
-    var title: String {
-        "\(year)·\(region)·\(subject)"
-    }
-
-    /// 映射后端 JSON 字段。
-    enum CodingKeys: String, CodingKey {
-        case id
-        case year
-        case region
-        case subject
-        case fileName
+    /// 列表中显示的完整标题，服务端未返回时兜底
+    var displayTitle: String {
+        title.isEmpty ? "\(year)·\(region)·\(subject)" : title
     }
 }
 

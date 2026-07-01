@@ -1,10 +1,11 @@
+import type { QueryResultRow } from 'pg'
 import { Hono } from 'hono'
 import { query } from '../db/index.js'
 import type { NewsItem } from '../types/index.js'
 
 export const newsRouter = new Hono()
 
-function toNewsItem(row: Record<string, unknown>): NewsItem {
+function toNewsItem(row: QueryResultRow): NewsItem {
   return {
     id: String(row.id),
     tag: String(row.tag),

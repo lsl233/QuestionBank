@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(xcodebuild *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(pnpm run *)"
     ]
   }
 }

@@ -3,48 +3,109 @@ import fs from 'node:fs/promises'
 import { createReadStream } from 'node:fs'
 import path from 'node:path'
 import { env } from '../config/env.js'
+import { query } from '../db/index.js'
+import { requireMembership } from '../middleware/membership.js'
 
 export const filesRouter = new Hono()
 
-// 仅允许字母、数字、中文以及常见连接符，防止路径遍历
+// 文件名仅允许字母、数字、中文以及常见连接符
 const safeFileNameRegex = /^[\w一-龥\-·．.]+$/
 
-filesRouter.get('/:name', async (c) => {
-  const name = c.req.param('name')
+function isInsideFilesDir(targetPath: string): boolean {
+  const resolvedDir = path.resolve(env.FILES_DIR)
+  return targetPath.startsWith(resolvedDir + path.sep) || targetPath === resolvedDir
+}
 
+async function resolvePaperFilePath(name: string): Promise<string | null> {
   if (!safeFileNameRegex.test(name) || name.includes('..')) {
-    return c.json({ error: 'Invalid file name' }, 400)
+    return null
   }
 
-  const filePath = path.resolve(env.FILES_DIR, `${name}.pdf`)
-  const resolvedDir = path.resolve(env.FILES_DIR)
+  const dbResult = await query(
+    `SELECT pf.file_path
+     FROM paper_files pf
+     JOIN papers p ON p.id = pf.paper_id
+     WHERE pf.file_type = 'exam_paper' AND p.file_name = $1
+     LIMIT 1`,
+    [name]
+  )
 
-  // 确保最终路径仍在 FILES_DIR 内
-  if (!filePath.startsWith(resolvedDir + path.sep)) {
+  if (dbResult.rows.length === 0) {
+    return null
+  }
+
+  return path.resolve(env.FILES_DIR, String(dbResult.rows[0].file_path))
+}
+
+async function serveLocalFile(c: any, filePath: string, defaultName?: string): Promise<Response> {
+  const resolved = path.resolve(filePath)
+  if (!isInsideFilesDir(resolved)) {
     return c.json({ error: 'Invalid file path' }, 400)
   }
 
-  try {
-    const stat = await fs.stat(filePath)
-    if (!stat.isFile()) {
-      return c.json({ error: 'File not found' }, 404)
-    }
-
-    const utf8Name = encodeURIComponent(`${name}.pdf`)
-    const fileStream = createReadStream(filePath)
-
-    return new Response(fileStream as unknown as ReadableStream, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="paper.pdf"; filename*=UTF-8''${utf8Name}`,
-        'Content-Length': stat.size.toString(),
-      },
-    })
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code
-    if (code === 'ENOENT') {
-      return c.json({ error: 'File not found' }, 404)
-    }
-    throw err
+  const stat = await fs.stat(resolved)
+  if (!stat.isFile()) {
+    return c.json({ error: 'File not found' }, 404)
   }
+
+  const ext = path.extname(resolved).toLowerCase()
+  const contentType =
+    ext === '.pdf'
+      ? 'application/pdf'
+      : ext === '.mp3'
+        ? 'audio/mpeg'
+        : ext === '.m4a'
+          ? 'audio/mp4'
+          : ext === '.txt' || ext === '.md'
+            ? 'text/plain; charset=utf-8'
+            : 'application/octet-stream'
+
+  const baseName = defaultName ?? path.basename(resolved)
+  const asciiName = `file${ext}`
+  const utf8Name = encodeURIComponent(baseName)
+  const fileStream = createReadStream(resolved)
+
+  return new Response(fileStream as unknown as ReadableStream, {
+    headers: {
+      'Content-Type': contentType,
+      'Content-Disposition': `inline; filename="${asciiName}"; filename*=UTF-8''${utf8Name}`,
+      'Content-Length': stat.size.toString(),
+    },
+  })
+}
+
+// 预览接口：不校验会员/登录，用于 App 内查看 PDF
+filesRouter.get('/:name/preview', async (c) => {
+  const name = c.req.param('name')
+  const filePath = await resolvePaperFilePath(name)
+
+  if (!filePath) {
+    return c.json({ error: 'File not found' }, 404)
+  }
+
+  return serveLocalFile(c, filePath, `${name}.pdf`)
+})
+
+// 下载接口：需要会员，代表「保存/分享」行为
+filesRouter.use('/:name', requireMembership())
+filesRouter.get('/:name', async (c) => {
+  const name = c.req.param('name')
+  const filePath = await resolvePaperFilePath(name)
+
+  if (!filePath) {
+    return c.json({ error: 'File not found' }, 404)
+  }
+
+  return serveLocalFile(c, filePath, `${name}.pdf`)
+})
+
+// 按相对路径直接访问任意文件
+filesRouter.use('/raw/:path{.+}', requireMembership())
+filesRouter.get('/raw/:path{.+}', async (c) => {
+  const rawPath = c.req.param('path')
+  if (rawPath.includes('..')) {
+    return c.json({ error: 'Invalid file path' }, 400)
+  }
+  const filePath = path.resolve(env.FILES_DIR, rawPath)
+  return serveLocalFile(c, filePath)
 })
