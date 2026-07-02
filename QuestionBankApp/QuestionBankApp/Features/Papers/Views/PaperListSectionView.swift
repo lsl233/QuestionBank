@@ -14,7 +14,7 @@ struct PaperListSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("PAPERS")
                         .font(.monoEnglish(.caption2, weight: .bold))
@@ -35,17 +35,7 @@ struct PaperListSectionView: View {
 
             LazyVStack(spacing: 12) {
                 ForEach(papers) { paper in
-                    ZStack(alignment: .topTrailing) {
-                        NavigationLink(destination: PaperDetailView(paper: paper)) {
-                            PaperRowView(paper: paper)
-                        }
-                        // 使用 PlainButtonStyle 避免 NavigationLink 默认的蓝色高亮/背景
-                        .buttonStyle(PlainButtonStyle())
-
-                        FavoriteStarButton(paper: paper)
-                            .padding(.top, 8)
-                            .padding(.trailing, 8)
-                    }
+                    PaperRowCell(paper: paper)
                 }
             }
         }

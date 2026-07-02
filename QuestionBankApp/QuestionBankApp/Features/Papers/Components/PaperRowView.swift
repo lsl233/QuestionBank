@@ -14,7 +14,7 @@ struct PaperRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // 顶部：科目标签 + 年份 + 卷别
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 subjectBadge
 
                 Text(paper.year)
@@ -46,7 +46,11 @@ struct PaperRowView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.cardBackground)
-        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color(css: "rgba(44, 24, 16, 0.08)"), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private var subjectBadge: some View {
@@ -54,32 +58,37 @@ struct PaperRowView: View {
         return Text(paper.subject)
             .font(.serifChinese(.caption, weight: .semibold))
             .foregroundColor(colors.text)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
             .background(colors.background)
-            .cornerRadius(6)
+            .clipShape(RoundedRectangle(cornerSize: CGSize(width: 2, height: 3), style: .circular))
     }
 
     private func subjectColors(for subject: String) -> (background: Color, text: Color) {
+        let badgeText = Color(hex: 0xF5F1E8)
         switch subject {
         case "语文":
-            return (Color(hex: 0xFCE8E6), Color(hex: 0xC73E1D))
-        case "数学", "数学(理)", "数学(文)":
-            return (Color(hex: 0xE8F0FE), Color(hex: 0x1A73E8))
+            return (Color(hex: 0xC73E1D), badgeText)
+        case "数学", "数学(理)":
+            return (Color(hex: 0x3A6080), badgeText)
+        case "数学(文)":
+            return (Color(hex: 0x4E6B8A), badgeText)
         case "英语":
-            return (Color(hex: 0xE6F4EA), Color(hex: 0x1E8E3E))
+            return (Color(hex: 0x5C7A4E), badgeText)
         case "物理":
-            return (Color(hex: 0xE3F2FD), Color(hex: 0x1967D2))
+            return (Color(hex: 0x3A6080), badgeText)
         case "化学":
-            return (Color(hex: 0xF3E8FD), Color(hex: 0x9334E6))
+            return (Color(hex: 0x7B4E8A), badgeText)
         case "生物":
-            return (Color(hex: 0xE6F5E9), Color(hex: 0x34A853))
+            return (Color(hex: 0x4E8A6B), badgeText)
         case "历史":
-            return (Color(hex: 0xFFF0E6), Color(hex: 0xFA7B17))
+            return (Color(hex: 0x8A6B4E), badgeText)
         case "地理":
-            return (Color(hex: 0xE0F7FA), Color(hex: 0x0097A7))
+            return (Color(hex: 0x4E6B8A), badgeText)
+        case "政治":
+            return (Color(hex: 0x8A4E4E), badgeText)
         default:
-            return (AppTheme.secondaryBackground, AppTheme.textSecondary)
+            return (AppTheme.secondaryBackground, badgeText)
         }
     }
 }

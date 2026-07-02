@@ -9,6 +9,7 @@ export interface Paper {
   fileName: string
   title: string
   viewCount: number
+  createdAt: string
 }
 
 export interface PaperFile {

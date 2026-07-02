@@ -13,7 +13,7 @@ struct NewsSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("LATEST NEWS")
                         .font(.monoEnglish(.caption2, weight: .bold))

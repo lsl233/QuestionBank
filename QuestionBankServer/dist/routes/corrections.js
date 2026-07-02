@@ -17,6 +17,7 @@ function toPaper(row) {
         fileName: String(row.file_name),
         title: String(row.title),
         viewCount: row.view_count ? Number(row.view_count) : 0,
+        createdAt: row.paper_created_at ? new Date(row.paper_created_at).toISOString() : '',
     };
 }
 function toCorrection(row, paper) {
@@ -35,7 +36,7 @@ correctionsRouter.use('*', requireAuth());
 correctionsRouter.get('/', async (c) => {
     const user = getUser(c);
     const result = await query(`SELECT c.id AS correction_id, c.user_id, c.content, c.status, c.created_at, c.updated_at,
-            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count
+            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count, p.created_at AS paper_created_at
      FROM corrections c
      JOIN papers p ON p.id = c.paper_id
      WHERE c.user_id = $1

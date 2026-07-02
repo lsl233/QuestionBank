@@ -23,6 +23,7 @@ function toPaper(row) {
         fileName,
         title,
         viewCount: row.view_count ? Number(row.view_count) : 0,
+        createdAt: row.created_at ? new Date(row.created_at).toISOString() : '',
     };
 }
 function toPaperFile(row) {
@@ -66,7 +67,7 @@ papersRouter.get('/', async (c) => {
     const total = Number(countResult.rows[0].total);
     paramIndex++;
     const pagedParams = [...params, pageSize, offset];
-    const dataSql = `SELECT id, year, exam_type, region, subject, stream, note, file_name, title, view_count
+    const dataSql = `SELECT id, year, exam_type, region, subject, stream, note, file_name, title, view_count, created_at
                    FROM papers ${whereClause}
                    ORDER BY year DESC, region, subject
                    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
@@ -79,7 +80,7 @@ papersRouter.get('/:id', async (c) => {
     const result = await query(`UPDATE papers
      SET view_count = view_count + 1
      WHERE id = $1
-     RETURNING id, year, exam_type, region, subject, stream, note, file_name, title, view_count`, [id]);
+     RETURNING id, year, exam_type, region, subject, stream, note, file_name, title, view_count, created_at`, [id]);
     if (result.rows.length === 0) {
         return c.json({ error: 'Paper not found' }, 404);
     }

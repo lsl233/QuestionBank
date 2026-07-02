@@ -19,6 +19,7 @@ struct Paper: Identifiable, Codable, Hashable {
     let fileName: String // 对应后端 /files/:name 的文件名（不含扩展名）
     let title: String    // 后端展示标题，如"2024年全国甲卷·语文"
     let viewCount: Int   // 查看次数
+    let createdAt: String? // 后端创建时间，ISO 8601 字符串
 
     /// 列表中显示的完整标题，服务端未返回时兜底
     var displayTitle: String {

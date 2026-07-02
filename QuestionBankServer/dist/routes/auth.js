@@ -12,6 +12,7 @@ function toUser(row) {
 }
 authRouter.post('/apple', async (c) => {
     const body = await c.req.json();
+    console.log('Received Apple login request:', body);
     if (!body.identityToken) {
         return c.json({ error: 'identityToken is required' }, 400);
     }

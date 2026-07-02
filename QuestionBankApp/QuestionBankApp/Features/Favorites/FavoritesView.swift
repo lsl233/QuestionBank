@@ -35,16 +35,7 @@ struct FavoritesView: View {
                     emptyText: "暂无收藏试卷",
                     onRetry: { Task { await loadFavorites() } }
                 ) { paper in
-                    ZStack(alignment: .topTrailing) {
-                        NavigationLink(destination: PaperDetailView(paper: paper)) {
-                            PaperRowView(paper: paper)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        FavoriteStarButton(paper: paper)
-                            .padding(.top, 8)
-                            .padding(.trailing, 8)
-                    }
+                    PaperRowCell(paper: paper)
                 }
                 .navigationTitle("Favorites")
                 .navigationBarTitleDisplayMode(.large)

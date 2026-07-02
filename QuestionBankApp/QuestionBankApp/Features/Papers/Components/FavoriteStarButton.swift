@@ -18,7 +18,7 @@ struct FavoriteStarButton: View {
             }
         } label: {
             Image(systemName: userDataStore.isFavorite(paperId: paper.id) ? "star.fill" : "star")
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundColor(userDataStore.isFavorite(paperId: paper.id) ? AppTheme.accent : AppTheme.textTertiary)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

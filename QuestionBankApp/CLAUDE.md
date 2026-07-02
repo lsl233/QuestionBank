@@ -52,27 +52,31 @@ xcodebuild -project QuestionBankApp.xcodeproj -scheme QuestionBankApp -destinati
 
 应用遵循标准 SwiftUI 应用生命周期，使用单个 `WindowGroup`。目录按 **Feature-Based** 组织，跨功能共享的模型、网络层和通用 UI 组件放在 `Core/` 中。
 
-- `QuestionBankApp/QuestionBankAppApp.swift` —— 应用入口，将 `HomeView()` 设为根视图。
+- `QuestionBankApp/QuestionBankAppApp.swift` —— 应用入口，创建包含「首页 / 题库 / 收藏 / 我的」的 `TabView`，注入 `AuthManager`、`UserDataStore`、`TabRouter`。
+- `QuestionBankApp/Core/Router/TabRouter.swift` —— 底部 Tab 选中状态管理，支持跨 Tab 跳转。
 - `QuestionBankApp/Core/Network/APIService.swift` —— 网络请求封装，负责调用后端 `/papers`、`/news`、`/files/:name` 接口，并提供 `downloadPDF(fileName:)` 将 PDF 保存到应用沙盒。
-- `QuestionBankApp/Core/Models/Paper.swift` —— 高考试卷数据模型（`Codable`），包含年份/地区/科目筛选项。
+- `QuestionBankApp/Core/Models/Paper.swift` —— 高考试卷数据模型（`Codable`），包含年份/地区/科目筛选项与 `createdAt`（创建时间）。
 - `QuestionBankApp/Core/Models/NewsItem.swift` —— 新闻公告数据模型（`Codable`）。
-- `QuestionBankApp/Core/UIComponents/` —— 通用 UI 组件：`SearchBarView`、`FilterSectionView`、`ShareSheet`。
+- `QuestionBankApp/Core/UIComponents/` —— 通用 UI 组件：`SearchBarView`、`FilterSectionView`、`ShareSheet`、`AsyncListContainerView`、`LoginGuardView`、`LoginPromptView`。
 - `QuestionBankApp/Core/Theme/Color+Theme.swift` —— 主题色扩展，定义 `Color.brandCinnabar`、`Color.warmCream`、`Color.darkBrown` 等。
 - `QuestionBankApp/Core/Theme/AppTheme.swift` —— 语义化配色命名空间，业务代码优先使用 `AppTheme.accent`、`AppTheme.background` 等。
 - `QuestionBankApp/Core/Theme/Font+Theme.swift` —— 自定义字体扩展：`Font.serifChinese(...)`（Source Han Serif CN）和 `Font.monoEnglish(...)`（Space Mono）。
-- `QuestionBankApp/Features/Home/HomeView.swift` —— 主页面，进入时从后端拉取试卷列表和新闻公告，组装 `HeaderView`、`HeroCardView`、`SearchBarView`、`FilterSectionView`、`NewsSectionView`、`PaperListSectionView`。
+- `QuestionBankApp/Features/Home/HomeView.swift` —— 主页面，进入时从后端拉取新闻公告与最新试卷，组装 `HeaderView`、`NewsSectionView`、`LatestQuestionsModule`、`FavoritesModule`（登录且有收藏时显示）。
 - `QuestionBankApp/Features/Home/Components/HeaderView.swift` —— 首页顶部双语标题区。
-- `QuestionBankApp/Features/Home/Views/HeroCardView.swift` —— 深色高考倒计时 Hero 卡片。
+- `QuestionBankApp/Features/Papers/PapersView.swift` —— 题库 Tab，使用 `LoginGuardView` + `AsyncListContainerView` 控制状态，支持搜索与年份/地区/科目筛选。
+- `QuestionBankApp/Features/Papers/PapersViewModel.swift` —— 题库浏览状态与本地过滤逻辑。
 - `QuestionBankApp/Features/Papers/PaperDetailView.swift` —— 试卷详情页，进入后自动下载 PDF 到 `Documents` 再本地渲染；底部工具栏提供收藏、下载/分享、勘误反馈入口。
 - `QuestionBankApp/Features/Papers/Views/` —— 试卷相关视图：`PaperListSectionView`、`PDFViewer`。
-- `QuestionBankApp/Features/Papers/Components/PaperRowView.swift` —— 单条试卷行。
+- `QuestionBankApp/Features/Papers/Components/` —— 试卷相关组件：`PaperRowView`（内容卡片）、`PaperRowCell`（可点击行 + 收藏星标）、`FavoriteStarButton`。
+- `QuestionBankApp/Features/Favorites/FavoritesView.swift` —— 收藏 Tab，展示当前用户收藏的试卷。
+- `QuestionBankApp/Features/Profile/ProfileView.swift` —— 我的页面。
 - `QuestionBankApp/Features/News/Views/NewsSectionView.swift` —— 最新动态区块。
 - `QuestionBankApp/Features/News/Components/NewsCardView.swift` —— 单张动态卡片。
 - `QuestionBankApp/Resources/Fonts/` —— 自定义字体文件（当前包含 `SpaceMono-Regular.ttf`）。
 
 PDF 不再从主 bundle 加载，而是通过 `APIService.downloadPDF(fileName:)` 从后端 `GET /files/:name` 下载到应用沙盒的 `Documents` 目录，再本地渲染和分享。
 
-筛选和搜索在 `HomeView.filteredPapers` 中本地计算，搜索框与年份/地区/科目筛选器已在首页启用。
+底部 Tab 结构为「首页 / 题库 / 收藏 / 我的」。首页展示新闻公告、最新 3 套试题（带创建时间、无收藏按钮）以及登录用户的收藏入口；题库 Tab 提供搜索与年份/地区/科目筛选，使用 `PapersViewModel` 本地过滤。
 
 测试分为两个目标：
 

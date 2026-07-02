@@ -25,7 +25,7 @@ struct ProfileView: View {
                 .padding(.vertical, 16)
             }
             .background(AppTheme.background.ignoresSafeArea())
-            .navigationTitle("Profile")
+//            .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
         }
         .onAppear {

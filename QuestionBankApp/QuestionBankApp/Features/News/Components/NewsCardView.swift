@@ -42,8 +42,13 @@ struct NewsCardView: View {
         .padding(12)
         .frame(width: 240, height: 120, alignment: .topLeading)
         .background(AppTheme.cardBackground)
-        .cornerRadius(12)
+//        .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color(css: "rgba(44, 24, 16, 0.08)"), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 6))
         // 柔和暖棕色阴影
-        .shadow(color: Color.darkBrown.opacity(0.06), radius: 8, x: 0, y: 2)
+//        .shadow(color: Color.darkBrown.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 }

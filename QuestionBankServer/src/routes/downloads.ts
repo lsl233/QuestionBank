@@ -21,6 +21,7 @@ function toPaper(row: Record<string, unknown>): Paper {
     fileName: String(row.file_name),
     title: String(row.title),
     viewCount: row.view_count ? Number(row.view_count) : 0,
+    createdAt: row.paper_created_at ? new Date(row.paper_created_at as string | number | Date).toISOString() : '',
   }
 }
 
@@ -40,7 +41,7 @@ downloadsRouter.get('/', async (c) => {
   const user = getUser(c)
   const result = await query(
     `SELECT d.id AS download_id, d.user_id, d.created_at,
-            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count
+            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count, p.created_at AS paper_created_at
      FROM downloads d
      JOIN papers p ON p.id = d.paper_id
      WHERE d.user_id = $1

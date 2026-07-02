@@ -27,6 +27,7 @@ function toPaper(row: QueryResultRow): Paper {
     fileName,
     title,
     viewCount: row.view_count ? Number(row.view_count) : 0,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : '',
   }
 }
 
@@ -80,7 +81,7 @@ papersRouter.get('/', async (c) => {
 
   paramIndex++
   const pagedParams = [...params, pageSize, offset]
-  const dataSql = `SELECT id, year, exam_type, region, subject, stream, note, file_name, title, view_count
+  const dataSql = `SELECT id, year, exam_type, region, subject, stream, note, file_name, title, view_count, created_at
                    FROM papers ${whereClause}
                    ORDER BY year DESC, region, subject
                    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`
@@ -96,7 +97,7 @@ papersRouter.get('/:id', async (c) => {
     `UPDATE papers
      SET view_count = view_count + 1
      WHERE id = $1
-     RETURNING id, year, exam_type, region, subject, stream, note, file_name, title, view_count`,
+     RETURNING id, year, exam_type, region, subject, stream, note, file_name, title, view_count, created_at`,
     [id]
   )
 

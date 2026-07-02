@@ -23,7 +23,8 @@
       "Bash(awk -F'/' '{print $\\(NF-1\\)}')",
       "Bash(awk '{print $1}')",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

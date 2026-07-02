@@ -21,6 +21,7 @@ function toPaper(row: Record<string, unknown>): Paper {
     fileName: String(row.file_name),
     title: String(row.title),
     viewCount: row.view_count ? Number(row.view_count) : 0,
+    createdAt: row.paper_created_at ? new Date(row.paper_created_at as string | number | Date).toISOString() : '',
   }
 }
 
@@ -41,7 +42,7 @@ studyRecordsRouter.get('/', async (c) => {
   const user = getUser(c)
   const result = await query(
     `SELECT s.id AS record_id, s.user_id, s.viewed_at, s.duration_sec,
-            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count
+            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count, p.created_at AS paper_created_at
      FROM study_records s
      JOIN papers p ON p.id = s.paper_id
      WHERE s.user_id = $1

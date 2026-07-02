@@ -17,6 +17,7 @@ function toPaper(row) {
         fileName: String(row.file_name),
         title: String(row.title),
         viewCount: row.view_count ? Number(row.view_count) : 0,
+        createdAt: row.paper_created_at ? new Date(row.paper_created_at).toISOString() : '',
     };
 }
 function toFavorite(row, paper) {
@@ -32,7 +33,7 @@ favoritesRouter.use('*', requireAuth());
 favoritesRouter.get('/', async (c) => {
     const user = getUser(c);
     const result = await query(`SELECT f.id AS favorite_id, f.user_id, f.created_at,
-            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count
+            p.id AS id, p.year, p.exam_type, p.region, p.subject, p.stream, p.note, p.file_name, p.title, p.view_count, p.created_at AS paper_created_at
      FROM favorites f
      JOIN papers p ON p.id = f.paper_id
      WHERE f.user_id = $1

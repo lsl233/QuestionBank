@@ -10,7 +10,7 @@ import SwiftUI
 /// 首页顶部标题：英文标识 + 大标题 + 副标题
 struct HeaderView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("GAOKAO")
                 .font(.monoEnglish(.caption, weight: .bold))
                 .tracking(3)
@@ -19,13 +19,16 @@ struct HeaderView: View {
             Text("高考真题")
                 .font(.serifChinese(.largeTitle, weight: .black))
                 .foregroundColor(.darkBrown)
-
+                .frame(height: 34, alignment: .center)
+            
             Text("历年真题 · 速查速练")
                 .font(.serifChinese(.subheadline))
                 .foregroundColor(.mutedBrown)
-
+            
+            
             Divider()
                 .background(AppTheme.divider)
+
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
