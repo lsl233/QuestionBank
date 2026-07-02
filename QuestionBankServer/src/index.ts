@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { logger } from 'hono/logger'
 import { env } from './config/env.js'
 import { authRouter } from './routes/auth.js'
 import { correctionsRouter } from './routes/corrections.js'
@@ -14,6 +15,8 @@ import { studyRecordsRouter } from './routes/studyRecords.js'
 
 const app = new Hono()
 
+app.use(logger())
+
 app.route('/papers', papersRouter)
 app.route('/news', newsRouter)
 app.route('/files', filesRouter)
@@ -25,7 +28,7 @@ app.route('/corrections', correctionsRouter)
 app.route('/study-records', studyRecordsRouter)
 
 app.onError((err, c) => {
-  console.error(err)
+  console.error(`[ERROR] ${c.req.method} ${c.req.path}`, err)
   return c.json({ error: 'Internal server error' }, 500)
 })
 
@@ -36,5 +39,6 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`)
+    console.log(`Test auth enabled: ${env.ENABLE_TEST_AUTH === 'true'}`)
   }
 )

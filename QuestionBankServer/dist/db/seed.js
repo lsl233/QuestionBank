@@ -48,6 +48,12 @@ async function run() {
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (title) DO NOTHING`, [news.tag, news.date, news.title, news.description]);
     }
+    // 创建固定测试账号，仅开发调试使用
+    await query(`INSERT INTO users (apple_user_id, email, name)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (apple_user_id) DO UPDATE SET
+       email = EXCLUDED.email,
+       name = EXCLUDED.name`, ['test-user', 'test@example.com', '测试用户']);
     console.log('Seed completed.');
     await pool.end();
 }

@@ -50,6 +50,15 @@ final class AuthManager: ObservableObject {
         isLoggedIn = true
     }
 
+    #if DEBUG
+    /// 测试环境一键登录，仅 DEBUG 构建可用
+    func signInWithTestAccount() async throws {
+        let token = try await APIService.shared.testLogin()
+        KeychainTokenStore.save(token: token)
+        isLoggedIn = true
+    }
+    #endif
+
     func signOut() {
         KeychainTokenStore.delete()
         isLoggedIn = false

@@ -14,15 +14,7 @@ struct NewsSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("LATEST NEWS")
-                        .font(.monoEnglish(.caption2, weight: .bold))
-                        .foregroundColor(.brandCinnabar)
-
-                    Text("最新动态")
-                        .font(.serifChinese(.headline, weight: .semibold))
-                        .foregroundColor(.darkBrown)
-                }
+                BilingualHeaderView(englishTitle: "LATEST NEWS", chineseTitle: "最新动态")
 
                 Spacer()
 

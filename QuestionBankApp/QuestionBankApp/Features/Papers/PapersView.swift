@@ -14,6 +14,9 @@ struct PapersView: View {
     @EnvironmentObject private var userDataStore: UserDataStore
     @StateObject private var viewModel = PapersViewModel()
 
+    /// 控制筛选 Sheet 的显示状态
+    @State private var showFilterSheet = false
+
     var body: some View {
         NavigationStack {
             LoginGuardView(
@@ -22,25 +25,26 @@ struct PapersView: View {
                 onLogin: { Task { await viewModel.loadPapers() } }
             ) {
                 VStack(spacing: 16) {
-                    SearchBarView(searchText: $viewModel.searchText)
+                    Group {
+                        BilingualHeaderView(
+                            englishTitle: "GAOKAO",
+                            chineseTitle: "试题库",
+                            style: .home
+                        )
 
-                    FilterSectionView(
-                        title: "年份",
-                        options: Paper.years,
-                        selection: $viewModel.selectedYear
-                    )
+                        HStack(spacing: 12) {
+                            SearchBarView(searchText: $viewModel.searchText)
 
-                    FilterSectionView(
-                        title: "地区",
-                        options: Paper.regions,
-                        selection: $viewModel.selectedRegion
-                    )
-
-                    FilterSectionView(
-                        title: "科目",
-                        options: Paper.subjects,
-                        selection: $viewModel.selectedSubject
-                    )
+                            Button {
+                                showFilterSheet = true
+                            } label: {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .font(.system(size: 22, weight: .medium))
+                                    .foregroundColor(AppTheme.accent)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
 
                     AsyncListContainerView(
                         isLoading: viewModel.isLoading,
@@ -54,12 +58,15 @@ struct PapersView: View {
                     }
                     .frame(maxHeight: .infinity)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
-                .navigationTitle("Papers")
-                .navigationBarTitleDisplayMode(.large)
+                // .navigationTitle("Papers")
+                // .navigationBarTitleDisplayMode(.large)
+                .background(AppTheme.background)
                 .task {
                     await viewModel.loadPapers()
+                }
+                .sheet(isPresented: $showFilterSheet) {
+                    FilterSheetView(viewModel: viewModel)
+                        .presentationDetents([.medium, .large])
                 }
             }
         }

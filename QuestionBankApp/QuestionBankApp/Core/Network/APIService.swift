@@ -89,6 +89,13 @@ final class APIService {
         return response.token
     }
 
+    /// 测试环境一键登录，仅 DEBUG 构建使用
+    func testLogin() async throws -> String {
+        let data = try await request(path: "/auth/test-login", method: "POST")
+        let response = try JSONDecoder().decode(SignInResponse.self, from: data)
+        return response.token
+    }
+
     // MARK: - 试卷
 
     /// 获取试卷列表。
@@ -459,7 +466,7 @@ private struct CountResponse: Decodable {
 }
 
 /// 我的页计数
-struct ProfileCounts {
+struct ProfileCounts: Equatable {
     let downloadCount: Int
     let correctionCount: Int
     let studyRecordCount: Int

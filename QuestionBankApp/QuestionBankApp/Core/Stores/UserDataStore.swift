@@ -13,12 +13,17 @@ import Combine
 final class UserDataStore: ObservableObject {
     @Published var favoriteIDs: Set<String> = []
     @Published var profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+    
 
     /// 从后端加载收藏列表
     func loadFavorites() async {
         do {
             let papers = try await APIService.shared.fetchFavorites()
-            favoriteIDs = Set(papers.map(\.id))
+            let newIDs = Set(papers.map(\.id))
+            // 避免无意义触发 @Published，减少依赖视图的重建
+            if newIDs != favoriteIDs {
+                favoriteIDs = newIDs
+            }
         } catch APIError.unauthorized {
             favoriteIDs.removeAll()
         } catch {
@@ -61,9 +66,16 @@ final class UserDataStore: ObservableObject {
     /// 加载我的页计数
     func loadProfileCounts() async {
         do {
-            profileCounts = try await APIService.shared.fetchProfileCounts()
+            let counts = try await APIService.shared.fetchProfileCounts()
+            // 避免无意义触发 @Published，减少依赖视图的重建
+            if counts != profileCounts {
+                profileCounts = counts
+            }
         } catch APIError.unauthorized {
-            profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+            let empty = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+            if empty != profileCounts {
+                profileCounts = empty
+            }
         } catch {
             NSLog("加载记录计数失败: \(error.localizedDescription)")
         }

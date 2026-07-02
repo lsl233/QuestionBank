@@ -54,6 +54,7 @@ final class PapersViewModel: ObservableObject {
 
         do {
             papers = try await APIService.shared.fetchPapers()
+            print("Fetched papers: \(papers.map { $0.title })")
         } catch let error as APIError {
             errorMessage = error.localizedDescription
         } catch {
@@ -61,6 +62,13 @@ final class PapersViewModel: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    /// 将年份、地区、科目筛选条件重置为默认"全部"。
+    func resetFilters() {
+        selectedYear = Paper.years[0]
+        selectedRegion = Paper.regions[0]
+        selectedSubject = Paper.subjects[0]
     }
 
     /// 重新加载试卷列表，供重试按钮调用。

@@ -15,15 +15,7 @@ struct PaperListSectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("PAPERS")
-                        .font(.monoEnglish(.caption2, weight: .bold))
-                        .foregroundColor(.brandCinnabar)
-
-                    Text("试题列表")
-                        .font(.serifChinese(.headline, weight: .semibold))
-                        .foregroundColor(.darkBrown)
-                }
+                BilingualHeaderView(englishTitle: "PAPERS", chineseTitle: "试题列表")
 
                 Spacer()
 

@@ -15,7 +15,7 @@ struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var userDataStore: UserDataStore
     @EnvironmentObject private var tabRouter: TabRouter
-    @StateObject private var papersViewModel = PapersViewModel()
+    @StateObject private var papersViewModel: PapersViewModel = PapersViewModel()
 
     // MARK: - 状态
 
@@ -36,7 +36,7 @@ struct HomeView: View {
 
     // MARK: - 计算属性
 
-    /// 根据本地收藏状态实时过滤，取消收藏后立即从首页模块消失
+    /// 根据本地收藏状态实时过滤，移除收藏后立即从首页模块消失
     private var displayedFavorites: [Paper] {
         favoritePapers.filter { userDataStore.isFavorite(paperId: $0.id) }
     }
@@ -71,7 +71,11 @@ struct HomeView: View {
     private var contentView: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 24) {
-                HeaderView()
+                BilingualHeaderView(
+                    englishTitle: "GAOKAO",
+                    chineseTitle: "高考真题",
+                    style: .home
+                )
 
                 NewsSectionView(news: news)
 
@@ -80,13 +84,12 @@ struct HomeView: View {
                     isLoading: papersViewModel.isLoading
                 )
 
-                if shouldShowFavoritesModule {
-                    FavoritesModule(
-                        favoritePapers: displayedFavorites,
-                        isLoading: isLoadingFavorites,
-                        onViewAll: { tabRouter.selectedTab = .favorites }
-                    )
-                }
+                FavoritesModule(
+                    favoritePapers: displayedFavorites,
+                    isLoading: isLoadingFavorites,
+                    onViewAll: { tabRouter.selectedTab = .favorites }
+                )
+                .opacity(shouldShowFavoritesModule ? 1 : 0)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
@@ -201,15 +204,7 @@ private struct FavoritesModule: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("MY FAVORITES")
-                        .font(.monoEnglish(.caption2, weight: .bold))
-                        .foregroundColor(.brandCinnabar)
-
-                    Text("我的收藏")
-                        .font(.serifChinese(.headline, weight: .semibold))
-                        .foregroundColor(.darkBrown)
-                }
+                BilingualHeaderView(englishTitle: "MY FAVORITES", chineseTitle: "我的收藏")
 
                 Spacer()
 
@@ -309,7 +304,8 @@ private struct CompactPaperCard: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(Color.brandCinnabar)
-                    .clipShape(RoundedRectangle(cornerSize: CGSize(width: 2, height: 3), style: .circular))
+                    .clipShape(
+                        RoundedRectangle(cornerSize: CGSize(width: 2, height: 3), style: .circular))
 
                 Text(paper.year)
                     .font(.monoEnglish(.caption, weight: .medium))
@@ -345,15 +341,7 @@ private struct LatestQuestionsModule: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("LATEST QUESTIONS")
-                        .font(.monoEnglish(.caption2, weight: .bold))
-                        .foregroundColor(.brandCinnabar)
-
-                    Text("最新试题")
-                        .font(.serifChinese(.headline, weight: .semibold))
-                        .foregroundColor(.darkBrown)
-                }
+                BilingualHeaderView(englishTitle: "LATEST QUESTIONS", chineseTitle: "最新试题")
 
                 Spacer()
 

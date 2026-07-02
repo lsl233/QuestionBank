@@ -35,14 +35,27 @@ struct LoginPromptView: View {
                     }
                 }
             }
-        
             .font(.serifChinese(.subheadline, weight: .semibold))
             .padding(.horizontal, 24)
             .padding(.vertical, 10)
             .background(AppTheme.accent)
             .foregroundColor(.white)
             .cornerRadius(8)
-            
+
+            #if DEBUG
+            Button("测试账号登录") {
+                Task {
+                    do {
+                        try await authManager.signInWithTestAccount()
+                        onLogin?()
+                    } catch {
+                        errorMessage = error.localizedDescription
+                    }
+                }
+            }
+            .font(.serifChinese(.subheadline))
+            .foregroundColor(AppTheme.textSecondary)
+            #endif
 
             if let errorMessage {
                 Text(errorMessage)

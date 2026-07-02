@@ -88,6 +88,7 @@ papersRouter.get('/', async (c) => {
 
   const result = await query(dataSql, pagedParams)
   const papers = result.rows.map(toPaper)
+  
   return c.json({ papers, total, page: currentPage, limit: pageSize })
 })
 

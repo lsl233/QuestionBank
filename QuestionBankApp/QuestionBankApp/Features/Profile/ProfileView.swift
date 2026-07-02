@@ -9,7 +9,8 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
-    @EnvironmentObject private var userDataStore: UserDataStore
+
+    @State private var profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
 
     var body: some View {
         NavigationStack {
@@ -25,28 +26,23 @@ struct ProfileView: View {
                 .padding(.vertical, 16)
             }
             .background(AppTheme.background.ignoresSafeArea())
-//            .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
         }
         .onAppear {
             Task {
                 if authManager.isLoggedIn {
-                    await userDataStore.loadProfileCounts()
+                    await loadProfileCounts()
                 }
             }
         }
     }
 
     private var headerView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("PROFILE")
-                .font(.monoEnglish(.caption2, weight: .bold))
-                .foregroundColor(AppTheme.accent)
-            Text("我的")
-                .font(.serifChinese(.largeTitle, weight: .bold))
-                .foregroundColor(AppTheme.textPrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        BilingualHeaderView(
+            englishTitle: "PROFILE",
+            chineseTitle: "我的",
+            style: .page
+        )
     }
 
     private var profileCard: some View {
@@ -83,7 +79,7 @@ struct ProfileView: View {
                 menuRow(
                     icon: "arrow.down.circle",
                     title: "下载历史",
-                    subtitle: "已下载 \(userDataStore.profileCounts.downloadCount) 套"
+                    subtitle: "已下载 \(profileCounts.downloadCount) 套"
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -92,7 +88,7 @@ struct ProfileView: View {
                 menuRow(
                     icon: "exclamationmark.circle",
                     title: "错误反馈",
-                    subtitle: "已提交 \(userDataStore.profileCounts.correctionCount) 条勘误"
+                    subtitle: "已提交 \(profileCounts.correctionCount) 条勘误"
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -101,7 +97,7 @@ struct ProfileView: View {
                 menuRow(
                     icon: "clock",
                     title: "学习记录",
-                    subtitle: "已查看 \(userDataStore.profileCounts.studyRecordCount) 套试卷"
+                    subtitle: "已查看 \(profileCounts.studyRecordCount) 套试卷"
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -150,5 +146,15 @@ struct ProfileView: View {
         guard let gaokaoDate = calendar.date(from: components) else { return 0 }
         let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: gaokaoDate)).day ?? 0
         return max(days, 0)
+    }
+
+    private func loadProfileCounts() async {
+        do {
+            profileCounts = try await APIService.shared.fetchProfileCounts()
+        } catch APIError.unauthorized {
+            profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+        } catch {
+            NSLog("加载记录计数失败: \(error.localizedDescription)")
+        }
     }
 }

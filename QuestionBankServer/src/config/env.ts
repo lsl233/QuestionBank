@@ -10,5 +10,6 @@ export const env = z
     APPLE_IAP_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
     APPLE_ROOT_CA_DIR: z.string().default('./certs'),
     APPLE_IAP_SKIP_VERIFY: z.enum(['true', 'false']).default('false'),
+    ENABLE_TEST_AUTH: z.enum(['true', 'false']).default('false'),
   })
   .parse(process.env)

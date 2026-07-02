@@ -38,84 +38,84 @@ struct PaperDetailView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if isDownloading {
-                    // 下载中：显示进度提示
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text(downloadProgress > 0 ? "正在加载 PDF \(Int(downloadProgress * 100))%" : "正在加载 PDF...")
-                            .font(.serifChinese(.subheadline))
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(AppTheme.background)
-                } else if let errorMessage {
-                    // 下载失败：显示错误和重试
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 48))
-                            .foregroundColor(AppTheme.error)
-                        Text("加载失败")
-                            .font(.serifChinese(.headline, weight: .semibold))
-                            .foregroundColor(AppTheme.textPrimary)
-                        Text(errorMessage)
-                            .font(.serifChinese(.subheadline))
-                            .foregroundColor(AppTheme.textSecondary)
-                            .multilineTextAlignment(.center)
-                        Button("重新加载") {
-                            Task { await previewPDF() }
-                        }
-                        .font(.serifChinese(.subheadline, weight: .semibold))
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 8)
-                        .background(AppTheme.accent)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                    }
-                    .padding(.horizontal, 32)
-                    .background(AppTheme.background)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let localPDFURL {
-                    // 下载成功：PDF + 底部功能栏
-                    pdfContentView(url: localPDFURL)
-                } else {
-                    Text("PDF 链接无效")
+        Group {
+            if isDownloading {
+                // 下载中：显示进度提示
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text(downloadProgress > 0 ? "正在加载 PDF \(Int(downloadProgress * 100))%" : "正在加载 PDF...")
                         .font(.serifChinese(.subheadline))
+                        .foregroundColor(AppTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(AppTheme.background)
+            } else if let errorMessage {
+                // 下载失败：显示错误和重试
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 48))
                         .foregroundColor(AppTheme.error)
-                }
-            }
-            .navigationTitle(paper.displayTitle)
-            .sheet(isPresented: $showShareSheet) {
-                if let localPDFURL {
-                    // 分享本地文件，用户可选择「存储到文件」完成下载
-                    ShareSheet(activityItems: [localPDFURL])
-                }
-            }
-            .sheet(isPresented: $showCorrectionSheet) {
-                CorrectionSheet(paper: paper) {
-                    Task {
-                        await userDataStore.loadProfileCounts()
+                    Text("加载失败")
+                        .font(.serifChinese(.headline, weight: .semibold))
+                        .foregroundColor(AppTheme.textPrimary)
+                    Text(errorMessage)
+                        .font(.serifChinese(.subheadline))
+                        .foregroundColor(AppTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                    Button("重新加载") {
+                        Task { await previewPDF() }
                     }
+                    .font(.serifChinese(.subheadline, weight: .semibold))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 8)
+                    .background(AppTheme.accent)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
+                .padding(.horizontal, 32)
+                .background(AppTheme.background)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let localPDFURL {
+                Text("测试")
+                // 下载成功：PDF + 底部功能栏
+                pdfContentView(url: localPDFURL)
+            } else {
+                Text("PDF 链接无效")
+                    .font(.serifChinese(.subheadline))
+                    .foregroundColor(AppTheme.error)
+            }
+        }
+        .navigationTitle(paper.displayTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showShareSheet) {
+            if let localPDFURL {
+                // 分享本地文件，用户可选择「存储到文件」完成下载
+                ShareSheet(activityItems: [localPDFURL])
+            }
+        }
+        .sheet(isPresented: $showCorrectionSheet) {
+            CorrectionSheet(paper: paper) {
+                Task {
+                    await userDataStore.loadProfileCounts()
                 }
             }
-            .alert("下载受限", isPresented: $showDownloadRestrictionAlert) {
-                Button("确定", role: .cancel) {}
-            } message: {
-                Text(downloadRestrictionMessage)
-            }
-            // 页面出现时自动预览 PDF 并记录学习
-            .task {
-                await previewPDF()
-            }
-            .onAppear {
-                // 查看 3 秒后记录学习记录
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    Task {
-                        try? await APIService.shared.recordStudy(paperId: paper.id, durationSec: 3)
-                        await userDataStore.loadProfileCounts()
-                    }
+        }
+        .alert("下载受限", isPresented: $showDownloadRestrictionAlert) {
+            Button("确定", role: .cancel) {}
+        } message: {
+            Text(downloadRestrictionMessage)
+        }
+        // 页面出现时自动预览 PDF 并记录学习
+        .task {
+            await previewPDF()
+        }
+        .onAppear {
+            // 查看 3 秒后记录学习记录
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                Task {
+                    try? await APIService.shared.recordStudy(paperId: paper.id, durationSec: 3)
+                    await userDataStore.loadProfileCounts()
                 }
             }
         }
