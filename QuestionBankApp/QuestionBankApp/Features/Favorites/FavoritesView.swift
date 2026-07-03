@@ -22,28 +22,39 @@ struct FavoritesView: View {
 
     var body: some View {
         NavigationStack {
-            LoginGuardView(
-                icon: "star.circle",
-                title: "登录后查看收藏",
-                onLogin: { Task { await loadFavorites() } }
-            ) {
-                AsyncListContainerView(
-                    isLoading: isLoading,
-                    errorMessage: errorMessage,
-                    items: displayedFavorites,
-                    emptyIcon: "star",
-                    emptyText: "暂无收藏试卷",
-                    onRetry: { Task { await loadFavorites() } }
-                ) { paper in
-                    PaperRowCell(paper: paper)
+            VStack(spacing: 16) {
+                BilingualHeaderView(
+                    englishTitle: "FAVORITES",
+                    chineseTitle: "我的收藏",
+                    style: .home
+                )
+                LoginGuardView(
+                    icon: "star.circle",
+                    title: "登录后查看收藏",
+                    onLogin: { Task { await loadFavorites() } }
+                ) {
+                    AsyncListContainerView(
+                        isLoading: isLoading,
+                        errorMessage: errorMessage,
+                        items: displayedFavorites,
+                        emptyIcon: "star",
+                        emptyText: "暂无收藏试卷",
+                        onRetry: { Task { await loadFavorites() } }
+                    ) { paper in
+                        PaperRowCell(paper: paper)
+                    }
+                    // .navigationTitle("Favorites")
+                    // .navigationBarTitleDisplayMode(.large)
+                    .task {
+                        await loadFavorites()
+                    }
                 }
-                .navigationTitle("Favorites")
-                .navigationBarTitleDisplayMode(.large)
-                .task {
-                    await loadFavorites()
-                }
+                
             }
+            .padding(.horizontal, 16)
+            .background(AppTheme.background)
         }
+
     }
 
     private func loadFavorites() async {

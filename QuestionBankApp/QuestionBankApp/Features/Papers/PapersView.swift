@@ -10,8 +10,6 @@ import SwiftUI
 /// 题库 Tab 主视图。
 /// 集中展示所有试卷，并支持搜索与多维筛选。
 struct PapersView: View {
-    @EnvironmentObject private var authManager: AuthManager
-    @EnvironmentObject private var userDataStore: UserDataStore
     @StateObject private var viewModel = PapersViewModel()
 
     /// 控制筛选 Sheet 的显示状态
@@ -44,7 +42,7 @@ struct PapersView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 16)
+                   
 
                     AsyncListContainerView(
                         isLoading: viewModel.isLoading,
@@ -58,8 +56,7 @@ struct PapersView: View {
                     }
                     .frame(maxHeight: .infinity)
                 }
-                // .navigationTitle("Papers")
-                // .navigationBarTitleDisplayMode(.large)
+                 .padding(.horizontal, 16)
                 .background(AppTheme.background)
                 .task {
                     await viewModel.loadPapers()
@@ -70,11 +67,6 @@ struct PapersView: View {
                 }
             }
         }
-    }
-}
 
-#Preview {
-    PapersView()
-        .environmentObject(AuthManager())
-        .environmentObject(UserDataStore())
+    }
 }

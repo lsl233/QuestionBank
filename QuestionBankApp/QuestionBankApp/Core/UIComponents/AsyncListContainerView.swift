@@ -28,7 +28,6 @@ struct AsyncListContainerView<Item: Identifiable, Row: View>: View {
                 listView
             }
         }
-        .background(AppTheme.background.ignoresSafeArea())
     }
 
     private var listView: some View {
@@ -38,7 +37,6 @@ struct AsyncListContainerView<Item: Identifiable, Row: View>: View {
                     row(item)
                 }
             }
-            .padding(16)
         }
     }
 

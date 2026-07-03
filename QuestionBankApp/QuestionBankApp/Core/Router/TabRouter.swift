@@ -21,5 +21,9 @@ enum AppTab: Hashable {
 /// 子视图修改 `selectedTab` 即可切换底部 Tab。
 @MainActor
 final class TabRouter: ObservableObject {
-    @Published var selectedTab: AppTab = .home
+    @Published var selectedTab: AppTab = .home {
+        didSet {
+            print("[TabRouter] selectedTab changed: \(oldValue) -> \(selectedTab)")
+        }
+    }
 }

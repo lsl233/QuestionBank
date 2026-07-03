@@ -15,6 +15,7 @@ struct QuestionBankAppApp: App {
     @StateObject private var tabRouter = TabRouter()
 
     init() {
+        print("[App] QuestionBankAppApp init()")
         // 全局导航栏/工具栏强调色改为朱砂红
         UINavigationBar.appearance().tintColor = UIColor(Color.brandCinnabar)
         // 列表/分组背景统一使用暖白色

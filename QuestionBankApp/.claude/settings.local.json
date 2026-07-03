@@ -11,7 +11,8 @@
       "Bash(lsof -ti:3000)",
       "Bash(xargs kill -9)",
       "Bash(curl -s -X POST http://localhost:3000/auth/test-login)",
-      "Bash(ENABLE_TEST_AUTH=true pnpm run *)"
+      "Bash(ENABLE_TEST_AUTH=true pnpm run *)",
+      "Bash(xcrun simctl *)"
     ]
   }
 }

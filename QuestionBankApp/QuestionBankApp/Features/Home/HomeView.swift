@@ -92,7 +92,6 @@ struct HomeView: View {
                 .opacity(shouldShowFavoritesModule ? 1 : 0)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 16)
         }
         .background(AppTheme.background)
         // 隐藏默认导航栏，由自定义 HeaderView 充当页面标题
