@@ -77,7 +77,6 @@ struct PaperDetailView: View {
                 .background(AppTheme.background)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let localPDFURL {
-                Text("测试")
                 // 下载成功：PDF + 底部功能栏
                 pdfContentView(url: localPDFURL)
             } else {

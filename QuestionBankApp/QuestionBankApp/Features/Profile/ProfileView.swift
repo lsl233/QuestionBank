@@ -10,13 +10,18 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
 
-    @State private var profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+    @State private var profileCounts = ProfileCounts(
+        downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
 
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    headerView
+                    BilingualHeaderView(
+                        englishTitle: "PROFILE",
+                        chineseTitle: "我的",
+                        style: .home
+                    )
                     profileCard
                     menuList
                     Spacer(minLength: 40)
@@ -35,14 +40,6 @@ struct ProfileView: View {
                 }
             }
         }
-    }
-
-    private var headerView: some View {
-        BilingualHeaderView(
-            englishTitle: "PROFILE",
-            chineseTitle: "我的",
-            style: .page
-        )
     }
 
     private var profileCard: some View {
@@ -144,7 +141,11 @@ struct ProfileView: View {
         let currentYear = calendar.component(.year, from: now)
         let components = DateComponents(year: currentYear + 1, month: 6, day: 7)
         guard let gaokaoDate = calendar.date(from: components) else { return 0 }
-        let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: gaokaoDate)).day ?? 0
+        let days =
+            calendar.dateComponents(
+                [.day], from: calendar.startOfDay(for: now),
+                to: calendar.startOfDay(for: gaokaoDate)
+            ).day ?? 0
         return max(days, 0)
     }
 
