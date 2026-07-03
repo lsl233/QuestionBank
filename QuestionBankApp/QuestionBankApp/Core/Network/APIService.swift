@@ -205,6 +205,27 @@ final class APIService {
         return try JSONDecoder().decode(MembershipStatus.self, from: data)
     }
 
+    /// 将会员购买成功的 StoreKit JWS 交易信息提交给服务端激活会员。
+    func verifyApplePurchase(jws: String) async throws {
+        let body: [String: Any] = ["signedTransactionJws": jws]
+        let data = try await authenticatedRequest(
+            path: "/membership/apple/verify",
+            method: "POST",
+            body: body
+        )
+
+        let response = try JSONDecoder().decode(VerifyPurchaseResponse.self, from: data)
+        guard response.success else {
+            throw MembershipPurchaseError.serverVerifyFailed(response.message ?? "会员激活失败，请稍后再试")
+        }
+    }
+
+    // MARK: - 账号
+
+    func deleteAccount() async throws {
+        _ = try await authenticatedRequest(path: "/account", method: "DELETE")
+    }
+
     // MARK: - 我的页计数
 
     func fetchProfileCounts() async throws -> ProfileCounts {
@@ -477,4 +498,10 @@ struct MembershipStatus: Decodable {
     let isMember: Bool
     let expiresAt: String?
     let isPermanent: Bool
+}
+
+/// 对应 POST /membership/apple/verify 的响应体
+private struct VerifyPurchaseResponse: Decodable {
+    let success: Bool
+    let message: String?
 }

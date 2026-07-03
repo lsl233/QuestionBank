@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A9419F792FF0240100CB21C7 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9419F782FF0240100CB21C7 /* StoreKit.framework */; };
+		A9691A2B2FF8159B00F4E1DB /* Membership.storekit in Resources */ = {isa = PBXBuildFile; fileRef = A9691A2A2FF8159B00F4E1DB /* Membership.storekit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A9419F5C2FF0240100CB21C7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,8 @@
 		A9419F4C2FF023FF00CB21C7 /* QuestionBankApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuestionBankApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9419F5B2FF0240100CB21C7 /* QuestionBankAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuestionBankAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9419F652FF0240100CB21C7 /* QuestionBankAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QuestionBankAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9419F782FF0240100CB21C7 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		A9691A2A2FF8159B00F4E1DB /* Membership.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = Membership.storekit; path = QuestionBankApp/Membership.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9419F792FF0240100CB21C7 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +83,11 @@
 		A9419F432FF023FF00CB21C7 = {
 			isa = PBXGroup;
 			children = (
+				A9691A2A2FF8159B00F4E1DB /* Membership.storekit */,
 				A9419F4E2FF023FF00CB21C7 /* QuestionBankApp */,
 				A9419F5E2FF0240100CB21C7 /* QuestionBankAppTests */,
 				A9419F682FF0240100CB21C7 /* QuestionBankAppUITests */,
+				A9419F7A2FF0240100CB21C7 /* Frameworks */,
 				A9419F4D2FF023FF00CB21C7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +100,14 @@
 				A9419F652FF0240100CB21C7 /* QuestionBankAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A9419F7A2FF0240100CB21C7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A9419F782FF0240100CB21C7 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -212,6 +230,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9691A2B2FF8159B00F4E1DB /* Membership.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,7 +474,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = name.lsl.QuestionBankAppTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lsl.QuestionBankAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -476,7 +495,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = name.lsl.QuestionBankAppTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lsl.QuestionBankAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -495,7 +514,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = name.lsl.QuestionBankAppUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lsl.QuestionBankAppUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -514,7 +533,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = name.lsl.QuestionBankAppUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lsl.QuestionBankAppUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

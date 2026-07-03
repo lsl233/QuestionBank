@@ -15,27 +15,34 @@ struct CorrectionListView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        LoginGuardView(
-            icon: "exclamationmark.circle",
-            title: "登录后查看错误反馈",
-            onLogin: { Task { await load() } }
-        ) {
-            AsyncListContainerView(
-                isLoading: isLoading,
-                errorMessage: errorMessage,
-                items: corrections,
-                emptyIcon: "exclamationmark.circle",
-                emptyText: "暂无反馈记录",
-                onRetry: { Task { await load() } }
-            ) { item in
-                correctionRow(item)
+        Group {
+            LoginGuardView(
+                icon: "exclamationmark.circle",
+                title: "登录后查看错误反馈",
+                onLogin: { Task { await load() } }
+            ) {
+                AsyncListContainerView(
+                    isLoading: isLoading,
+                    errorMessage: errorMessage,
+                    items: corrections,
+                    emptyIcon: "exclamationmark.circle",
+                    emptyText: "暂无反馈记录",
+                    onRetry: { Task { await load() } }
+                ) { item in
+                    correctionRow(item)
+                }
+
             }
+            .padding(.horizontal, 16)
+            .background(AppTheme.background.ignoresSafeArea())
             .navigationTitle("错误反馈")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await load()
             }
+            .toolbar(.hidden, for: .tabBar)
         }
+
     }
 
     private func correctionRow(_ item: CorrectionItem) -> some View {

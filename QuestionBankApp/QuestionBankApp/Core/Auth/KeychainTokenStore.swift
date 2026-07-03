@@ -9,7 +9,7 @@ import Foundation
 import Security
 
 enum KeychainTokenStore {
-    private static let service = "name.lsl.QuestionBankApp.sessionToken"
+    private static let service = "com.lsl.QuestionBankApp.sessionToken"
     private static let account = "user"
 
     static func save(token: String) {

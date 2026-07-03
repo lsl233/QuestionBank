@@ -15,27 +15,34 @@ struct DownloadHistoryView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        LoginGuardView(
-            icon: "arrow.down.circle",
-            title: "登录后查看下载历史",
-            onLogin: { Task { await load() } }
-        ) {
-            AsyncListContainerView(
-                isLoading: isLoading,
-                errorMessage: errorMessage,
-                items: downloads,
-                emptyIcon: "arrow.down.circle",
-                emptyText: "暂无下载记录",
-                onRetry: { Task { await load() } }
-            ) { item in
-                recordRow(item)
-            }
-            .navigationTitle("下载历史")
-            .navigationBarTitleDisplayMode(.inline)
-            .task {
-                await load()
+        Group {
+            LoginGuardView(
+                icon: "arrow.down.circle",
+                title: "登录后查看下载历史",
+                onLogin: { Task { await load() } }
+            ) {
+                AsyncListContainerView(
+                    isLoading: isLoading,
+                    errorMessage: errorMessage,
+                    items: downloads,
+                    emptyIcon: "arrow.down.circle",
+                    emptyText: "暂无下载记录",
+                    onRetry: { Task { await load() } }
+                ) { item in
+                    recordRow(item)
+                }
+
             }
         }
+        .navigationTitle("下载历史")
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await load()
+        }
+        .padding(.horizontal, 16)
+        .background(AppTheme.background.ignoresSafeArea())
+        .toolbar(.hidden, for: .tabBar)
+
     }
 
     private func recordRow(_ item: DownloadItem) -> some View {

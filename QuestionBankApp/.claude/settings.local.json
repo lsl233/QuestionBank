@@ -12,7 +12,16 @@
       "Bash(xargs kill -9)",
       "Bash(curl -s -X POST http://localhost:3000/auth/test-login)",
       "Bash(ENABLE_TEST_AUTH=true pnpm run *)",
-      "Bash(xcrun simctl *)"
+      "Bash(xcrun simctl *)",
+      "Bash(rm *)",
+      "Bash(: *)",
+      "Bash(plutil *)",
+      "Bash(xattr *)",
+      "WebSearch",
+      "Bash(python3 -m json.tool /Users/xxx/Code/QuestionBank/QuestionBankApp/QuestionBankApp/Resources/Membership.storekit)",
+      "Bash(python3 *)",
+      "Bash(xcodebuild -project /Users/xxx/Code/QuestionBank/QuestionBankApp/QuestionBankApp.xcodeproj -scheme QuestionBankApp -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

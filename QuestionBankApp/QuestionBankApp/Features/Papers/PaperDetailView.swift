@@ -87,6 +87,7 @@ struct PaperDetailView: View {
         }
         .navigationTitle(paper.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $showShareSheet) {
             if let localPDFURL {
                 // 分享本地文件，用户可选择「存储到文件」完成下载

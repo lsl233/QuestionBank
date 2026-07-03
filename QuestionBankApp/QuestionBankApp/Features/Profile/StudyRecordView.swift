@@ -36,6 +36,7 @@ struct StudyRecordView: View {
                 await load()
             }
         }
+        .toolbar(.hidden, for: .tabBar)
     }
 
     private func recordRow(_ item: StudyRecordItem) -> some View {

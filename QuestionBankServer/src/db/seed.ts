@@ -29,10 +29,10 @@ const sampleNews = [
 
 // 会员产品配置，product_id 需与 App Store Connect 中配置的一致
 const membershipProducts = [
-  { appleProductId: 'name.lsl.QuestionBankApp.membership.month', name: '月度会员', durationDays: 30, isPermanent: false },
-  { appleProductId: 'name.lsl.QuestionBankApp.membership.quarter', name: '季度会员', durationDays: 90, isPermanent: false },
-  { appleProductId: 'name.lsl.QuestionBankApp.membership.year', name: '年度会员', durationDays: 365, isPermanent: false },
-  { appleProductId: 'name.lsl.QuestionBankApp.membership.permanent', name: '永久会员', durationDays: null, isPermanent: true },
+  { appleProductId: 'com.lsl.QuestionBankApp.membership.month', name: '月度会员', durationDays: 30, isPermanent: false },
+  { appleProductId: 'com.lsl.QuestionBankApp.membership.quarter', name: '季度会员', durationDays: 90, isPermanent: false },
+  { appleProductId: 'com.lsl.QuestionBankApp.membership.year', name: '年度会员', durationDays: 365, isPermanent: false },
+  { appleProductId: 'com.lsl.QuestionBankApp.membership.permanent', name: '永久会员', durationDays: null, isPermanent: true },
 ]
 
 async function run() {
