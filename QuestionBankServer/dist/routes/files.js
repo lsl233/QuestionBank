@@ -5,6 +5,7 @@ import path from 'node:path';
 import { env } from '../config/env.js';
 import { query } from '../db/index.js';
 import { requireMembership } from '../middleware/membership.js';
+import { generateSignedURL, isQiniuEnabled, toQiniuKey } from '../storage/qiniu.js';
 export const filesRouter = new Hono();
 // 文件名仅允许字母、数字、中文以及常见连接符
 const safeFileNameRegex = /^[\w一-龥\-·．.]+$/;
@@ -12,7 +13,7 @@ function isInsideFilesDir(targetPath) {
     const resolvedDir = path.resolve(env.FILES_DIR);
     return targetPath.startsWith(resolvedDir + path.sep) || targetPath === resolvedDir;
 }
-async function resolvePaperFilePath(name) {
+async function resolvePaperFile(name) {
     if (!safeFileNameRegex.test(name) || name.includes('..')) {
         return null;
     }
@@ -24,7 +25,11 @@ async function resolvePaperFilePath(name) {
     if (dbResult.rows.length === 0) {
         return null;
     }
-    return path.resolve(env.FILES_DIR, String(dbResult.rows[0].file_path));
+    const relativePath = String(dbResult.rows[0].file_path);
+    return {
+        relativePath,
+        absolutePath: path.resolve(env.FILES_DIR, relativePath),
+    };
 }
 async function serveLocalFile(c, filePath, defaultName) {
     const resolved = path.resolve(filePath);
@@ -57,24 +62,34 @@ async function serveLocalFile(c, filePath, defaultName) {
         },
     });
 }
+function redirectToSignedURL(c, key) {
+    const signedURL = generateSignedURL(key);
+    return c.redirect(signedURL, 302);
+}
 // 预览接口：不校验会员/登录，用于 App 内查看 PDF
 filesRouter.get('/:name/preview', async (c) => {
     const name = c.req.param('name');
-    const filePath = await resolvePaperFilePath(name);
-    if (!filePath) {
+    const file = await resolvePaperFile(name);
+    if (!file) {
         return c.json({ error: 'File not found' }, 404);
     }
-    return serveLocalFile(c, filePath, `${name}.pdf`);
+    if (isQiniuEnabled()) {
+        return redirectToSignedURL(c, toQiniuKey(file.relativePath));
+    }
+    return serveLocalFile(c, file.absolutePath, `${name}.pdf`);
 });
 // 下载接口：需要会员，代表「保存/分享」行为
 filesRouter.use('/:name', requireMembership());
 filesRouter.get('/:name', async (c) => {
     const name = c.req.param('name');
-    const filePath = await resolvePaperFilePath(name);
-    if (!filePath) {
+    const file = await resolvePaperFile(name);
+    if (!file) {
         return c.json({ error: 'File not found' }, 404);
     }
-    return serveLocalFile(c, filePath, `${name}.pdf`);
+    if (isQiniuEnabled()) {
+        return redirectToSignedURL(c, toQiniuKey(file.relativePath));
+    }
+    return serveLocalFile(c, file.absolutePath, `${name}.pdf`);
 });
 // 按相对路径直接访问任意文件
 filesRouter.use('/raw/:path{.+}', requireMembership());
@@ -82,6 +97,9 @@ filesRouter.get('/raw/:path{.+}', async (c) => {
     const rawPath = c.req.param('path');
     if (rawPath.includes('..')) {
         return c.json({ error: 'Invalid file path' }, 400);
+    }
+    if (isQiniuEnabled()) {
+        return redirectToSignedURL(c, toQiniuKey(rawPath));
     }
     const filePath = path.resolve(env.FILES_DIR, rawPath);
     return serveLocalFile(c, filePath);

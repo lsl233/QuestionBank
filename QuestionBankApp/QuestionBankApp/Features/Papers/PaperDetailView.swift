@@ -44,9 +44,12 @@ struct PaperDetailView: View {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text(downloadProgress > 0 ? "正在加载 PDF \(Int(downloadProgress * 100))%" : "正在加载 PDF...")
-                        .font(.serifChinese(.subheadline))
-                        .foregroundColor(AppTheme.textSecondary)
+                    Text(
+                        downloadProgress > 0
+                            ? "正在加载 PDF \(Int(downloadProgress * 100))%" : "正在加载 PDF..."
+                    )
+                    .font(.serifChinese(.subheadline))
+                    .foregroundColor(AppTheme.textSecondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(AppTheme.background)
@@ -111,6 +114,10 @@ struct PaperDetailView: View {
             await previewPDF()
         }
         .onAppear {
+            // 进入详情页即记录一次查看，失败不阻塞用户
+            Task {
+                try? await APIService.shared.recordPaperView(paperId: paper.id)
+            }
             // 查看 3 秒后记录学习记录
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 Task {
@@ -173,7 +180,9 @@ struct PaperDetailView: View {
     }
 
     /// 单个底部按钮
-    private func toolbarButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+    private func toolbarButton(title: String, icon: String, action: @escaping () -> Void)
+        -> some View
+    {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
@@ -197,7 +206,8 @@ struct PaperDetailView: View {
         downloadProgress = 0
 
         do {
-            localPDFURL = try await APIService.shared.previewPDF(fileName: paper.fileName) { progress in
+            localPDFURL = try await APIService.shared.previewPDF(fileName: paper.fileName) {
+                progress in
                 Task { @MainActor in
                     downloadProgress = progress
                 }
@@ -279,7 +289,8 @@ struct CorrectionSheet: View {
 
                 Button("提交反馈") {
                     Task {
-                        try? await APIService.shared.submitCorrection(paperId: paper.id, content: content)
+                        try? await APIService.shared.submitCorrection(
+                            paperId: paper.id, content: content)
                         onSubmitted()
                         dismiss()
                     }

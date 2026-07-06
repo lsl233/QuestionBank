@@ -36,10 +36,6 @@ struct ProfileView: View {
     @State private var membershipStatus: MembershipStatus?
     @State private var membershipFlow: MembershipFlow?
 
-    @State private var showDeleteConfirmation = false
-    @State private var showDeleteErrorAlert = false
-    @State private var deleteErrorMessage: String?
-    @State private var isDeleting = false
     @State private var privacyURLItem: IdentifiableURL?
 
     var body: some View {
@@ -79,25 +75,18 @@ struct ProfileView: View {
         .sheet(item: $privacyURLItem) { item in
             SafariView(url: item.url)
         }
-        .alert("删除账号", isPresented: $showDeleteConfirmation) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
-                Task { await performDeleteAccount() }
-            }
-        } message: {
-            Text("此操作不可恢复。删除后，您的收藏、下载记录、学习记录、勘误反馈和会员状态将全部清除。")
-        }
-        .alert("删除失败", isPresented: $showDeleteErrorAlert) {
-            Button("确定", role: .cancel) {}
-        } message: {
-            Text(deleteErrorMessage ?? "请检查网络后重试")
-        }
         .onAppear {
             Task {
                 if authManager.isLoggedIn {
                     await loadProfileCounts()
                     await loadMembershipStatus()
                 }
+            }
+        }
+        .onChange(of: authManager.isLoggedIn) { _, isLoggedIn in
+            if !isLoggedIn {
+                profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
+                membershipStatus = nil
             }
         }
     }
@@ -170,6 +159,15 @@ struct ProfileView: View {
             // }
             // .buttonStyle(PlainButtonStyle())
 
+            NavigationLink(destination: SettingsView()) {
+                menuRow(
+                    icon: "gearshape",
+                    title: "设置",
+                    subtitle: "账号与隐私"
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+
             Button {
                 if let url = URL(string: "\(APIConfig.baseURL)/privacy") {
                     privacyURLItem = IdentifiableURL(url: url)
@@ -182,19 +180,6 @@ struct ProfileView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
-
-            Button {
-                showDeleteConfirmation = true
-            } label: {
-                menuRow(
-                    icon: "trash",
-                    title: "删除账号",
-                    subtitle: "永久删除账号及所有数据",
-                    tint: AppTheme.error
-                )
-            }
-            .buttonStyle(PlainButtonStyle())
-            .disabled(isDeleting)
         }
     }
 
@@ -210,7 +195,7 @@ struct ProfileView: View {
                 return "已开通永久会员"
             }
             if let expiresAt = status.expiresAt {
-                return "会员有效期至 \(formatDate(expiresAt))"
+                return DateFormatting.membershipExpirationSubtitle(expiresAt)
             }
             return "已开通会员"
         }
@@ -288,41 +273,6 @@ struct ProfileView: View {
         } catch {
             NSLog("加载会员状态失败: \(error.localizedDescription)")
         }
-    }
-
-    private func formatDate(_ string: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: string) else { return string }
-        let output = DateFormatter()
-        output.dateStyle = .medium
-        output.timeStyle = .none
-        return output.string(from: date)
-    }
-
-    private func performDeleteAccount() async {
-        isDeleting = true
-        defer { isDeleting = false }
-
-        do {
-            try await APIService.shared.deleteAccount()
-            await completeLocalCleanup()
-        } catch APIError.unauthorized {
-            // Token 过期或服务器端已删除，仍清理本地状态
-            await completeLocalCleanup()
-        } catch let error as APIError {
-            deleteErrorMessage = error.localizedDescription
-            showDeleteErrorAlert = true
-        } catch {
-            deleteErrorMessage = error.localizedDescription
-            showDeleteErrorAlert = true
-        }
-    }
-
-    private func completeLocalCleanup() async {
-        authManager.signOut()
-        userDataStore.clear()
-        profileCounts = ProfileCounts(downloadCount: 0, correctionCount: 0, studyRecordCount: 0)
-        membershipStatus = nil
     }
 }
 

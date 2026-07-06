@@ -86,6 +86,17 @@ papersRouter.get('/:id', async (c) => {
     }
     return c.json({ paper: toPaper(result.rows[0]) });
 });
+papersRouter.post('/:id/view', async (c) => {
+    const id = c.req.param('id');
+    const result = await query(`UPDATE papers
+     SET view_count = view_count + 1
+     WHERE id = $1
+     RETURNING id, year, exam_type, region, subject, stream, note, file_name, title, view_count, created_at`, [id]);
+    if (result.rows.length === 0) {
+        return c.json({ error: 'Paper not found' }, 404);
+    }
+    return c.json({ paper: toPaper(result.rows[0]) });
+});
 papersRouter.get('/:id/files', requireMembership(), async (c) => {
     const id = c.req.param('id');
     const paperResult = await query('SELECT id FROM papers WHERE id = $1', [id]);

@@ -34,11 +34,19 @@ function normalizeTransaction(payload) {
     };
 }
 function decodePayloadWithoutVerify(signedTransaction) {
-    const parts = signedTransaction.split('.');
-    if (parts.length !== 3) {
-        throw new Error('Invalid JWS format');
+    // StoreKit 2 模拟器返回的是 transaction.jsonRepresentation（纯 JSON），
+    // 真机返回的是 JWS。本地开发跳过校验时兼容两种情况。
+    try {
+        const parts = signedTransaction.split('.');
+        if (parts.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+            return normalizeTransaction(payload);
+        }
     }
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+    catch {
+        // not a valid JWS, fall through to raw JSON
+    }
+    const payload = JSON.parse(signedTransaction);
     return normalizeTransaction(payload);
 }
 export async function verifyAppleTransaction(signedTransaction) {

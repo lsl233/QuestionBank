@@ -12,6 +12,7 @@ import Foundation
 /// 开发模拟器运行时使用 localhost；
 /// 如果用真机测试，需要改成电脑的局域网 IP，例如 "http://192.168.1.5:3000"。
 enum APIConfig {
+//    static let baseURL = "http://113.31.108.217"
     static let baseURL = "http://localhost:3000"
 }
 
@@ -144,6 +145,13 @@ final class APIService {
         return response.paper
     }
 
+    // MARK: - 查看次数
+
+    /// 记录一次试卷查看，后端会将 view_count + 1
+    func recordPaperView(paperId: String) async throws {
+        _ = try await request(path: "/papers/\(paperId)/view", method: "POST")
+    }
+
     // MARK: - 新闻
 
     /// 获取新闻公告列表。
@@ -255,9 +263,8 @@ final class APIService {
         }
 
         logRequest("开始预览 PDF: \(remoteURL.absoluteString)")
-        print(remoteURL.absoluteString)
 
-        return try await savePDF(from: remoteURL, progress: progress)
+        return try await savePDF(for: URLRequest(url: remoteURL), progress: progress)
     }
 
     /// 下载 PDF：会员接口，用于触发「保存/分享」行为。
@@ -268,15 +275,18 @@ final class APIService {
         }
 
         logRequest("开始下载 PDF: \(remoteURL.absoluteString)")
-        print(remoteURL.absoluteString)
 
-        return try await savePDF(from: remoteURL, progress: progress)
+        var request = URLRequest(url: remoteURL)
+        if let token = token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        return try await savePDF(for: request, progress: progress)
     }
 
     /// 通用 PDF 保存逻辑：流式下载到 Documents 目录。
-    private func savePDF(from remoteURL: URL, progress: @escaping (Double) -> Void) async throws -> URL {
+    private func savePDF(for urlRequest: URLRequest, progress: @escaping (Double) -> Void) async throws -> URL {
         // 1. 流式下载并写入本地文件，同时上报进度
-        let (asyncBytes, response) = try await session.bytes(from: remoteURL)
+        let (asyncBytes, response) = try await session.bytes(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
